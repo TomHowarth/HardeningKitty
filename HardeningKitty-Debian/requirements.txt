@@ -1,0 +1,17 @@
+# HardeningKitty-Linux Requirements
+# Python 3.6+ required
+
+# No external dependencies required for basic functionality
+# All required modules are part of Python standard library:
+# - argparse
+# - csv
+# - json
+# - os
+# - sys
+# - subprocess
+# - datetime
+# - pathlib
+# - re
+
+# Optional dependencies for enhanced functionality:
+# colorama>=0.4.4  # Enhanced color support (optional)
