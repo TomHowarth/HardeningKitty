@@ -1,0 +1,130 @@
+ID,Category,Name,Method,MethodArgument,ConfigPath,ConfigKey,ClassName,Namespace,Property,DefaultValue,RecommendedValue,Operator,Severity
+1.1.1.1,Initial Setup,Ensure cramfs kernel module is disabled,modprobe,cramfs,,,,,,,blacklisted,=,Medium
+1.1.1.2,Initial Setup,Ensure freevxfs kernel module is disabled,modprobe,freevxfs,,,,,,,blacklisted,=,Medium
+1.1.1.3,Initial Setup,Ensure jffs2 kernel module is disabled,modprobe,jffs2,,,,,,,blacklisted,=,Medium
+1.1.1.4,Initial Setup,Ensure hfs kernel module is disabled,modprobe,hfs,,,,,,,blacklisted,=,Medium
+1.1.1.5,Initial Setup,Ensure hfsplus kernel module is disabled,modprobe,hfsplus,,,,,,,blacklisted,=,Medium
+1.1.1.6,Initial Setup,Ensure udf kernel module is disabled,modprobe,udf,,,,,,,blacklisted,=,Low
+1.1.2,Initial Setup,Ensure /tmp is configured with nodev,mount,nodev,/tmp,,,,,,nodev,contains,Medium
+1.1.3,Initial Setup,Ensure /tmp is configured with nosuid,mount,nosuid,/tmp,,,,,,nosuid,contains,Medium
+1.1.4,Initial Setup,Ensure /tmp is configured with noexec,mount,noexec,/tmp,,,,,,noexec,contains,Medium
+1.1.5,Initial Setup,Ensure /var/tmp is configured with nodev,mount,nodev,/var/tmp,,,,,,nodev,contains,Medium
+1.1.6,Initial Setup,Ensure /var/tmp is configured with nosuid,mount,nosuid,/var/tmp,,,,,,nosuid,contains,Medium
+1.1.7,Initial Setup,Ensure /var/tmp is configured with noexec,mount,noexec,/var/tmp,,,,,,noexec,contains,Medium
+1.1.8,Initial Setup,Ensure /dev/shm is configured with nodev,mount,nodev,/dev/shm,,,,,,nodev,contains,Medium
+1.1.9,Initial Setup,Ensure /dev/shm is configured with nosuid,mount,nosuid,/dev/shm,,,,,,nosuid,contains,Medium
+1.1.10,Initial Setup,Ensure /dev/shm is configured with noexec,mount,noexec,/dev/shm,,,,,,noexec,contains,Medium
+1.3.1,Initial Setup,Ensure AIDE is installed,package,aide,,,,,,,installed,=,High
+1.3.2,Initial Setup,Ensure filesystem integrity is regularly checked,service,aide-check.timer,,,,,,,enabled,=,Medium
+1.4.1,Initial Setup,Ensure bootloader password is set,file_exists,,/boot/grub2/user.cfg,,,,,,exists,=,High
+1.4.2,Initial Setup,Ensure permissions on bootloader config are configured,permission,,/boot/grub2/grub.cfg,,,,,,600,=,High
+1.5.1,Initial Setup,Ensure core dumps are restricted,sysctl,fs.suid_dumpable,,,,,,,0,=,Medium
+1.5.2,Initial Setup,Ensure address space layout randomization is enabled,sysctl,kernel.randomize_va_space,,,,,,,2,=,High
+1.6.1,Initial Setup,Ensure SELinux is installed,package,libselinux,,,,,,,installed,=,High
+1.6.2,Initial Setup,Ensure SELinux is not disabled in bootloader,grub,selinux,,,,,,,enforcing,!=,High
+1.6.3,Initial Setup,Ensure SELinux policy is configured,config_file,,/etc/selinux/config,SELINUXTYPE,,,,,targeted,=,High
+1.6.4,Initial Setup,Ensure SELinux state is enforcing,selinux,,,,,,,,enforcing,=,High
+1.7.1,Initial Setup,Ensure message of the day is configured properly,file_exists,,/etc/motd,,,,,,exists,=,Low
+1.7.2,Initial Setup,Ensure local login warning banner is configured,file_exists,,/etc/issue,,,,,,exists,=,Low
+1.7.3,Initial Setup,Ensure remote login warning banner is configured,file_exists,,/etc/issue.net,,,,,,exists,=,Low
+1.8.1,Initial Setup,Ensure GNOME Display Manager is removed,package,gdm,,,,,,,not-installed,=,Low
+2.1.1,Services,Ensure xinetd is not installed,package,xinetd,,,,,,,not-installed,=,High
+2.2.1,Services,Ensure time synchronization is in use,package,chrony,,,,,,,installed,=,Medium
+2.2.2,Services,Ensure chrony is configured,service,chronyd,,,,,,,enabled,=,Medium
+2.3.1,Services,Ensure NIS Client is not installed,package,ypbind,,,,,,,not-installed,=,High
+2.3.2,Services,Ensure rsh client is not installed,package,rsh,,,,,,,not-installed,=,High
+2.3.3,Services,Ensure talk client is not installed,package,talk,,,,,,,not-installed,=,High
+2.3.4,Services,Ensure telnet client is not installed,package,telnet,,,,,,,not-installed,=,High
+2.3.5,Services,Ensure LDAP client is not installed,package,openldap-clients,,,,,,,not-installed,=,Medium
+2.4,Services,Ensure nonessential services are removed or masked,service,autofs,,,,,,,disabled,=,Low
+3.1.1,Network Configuration,Disable IPv6 if not required,sysctl,net.ipv6.conf.all.disable_ipv6,,,,,,,1,=,Medium
+3.2.1,Network Configuration,Ensure packet redirect sending is disabled,sysctl,net.ipv4.conf.all.send_redirects,,,,,,,0,=,High
+3.2.2,Network Configuration,Ensure packet redirect sending is disabled (default),sysctl,net.ipv4.conf.default.send_redirects,,,,,,,0,=,High
+3.2.3,Network Configuration,Ensure IP forwarding is disabled,sysctl,net.ipv4.ip_forward,,,,,,,0,=,High
+3.2.4,Network Configuration,Ensure source routed packets are not accepted,sysctl,net.ipv4.conf.all.accept_source_route,,,,,,,0,=,High
+3.2.5,Network Configuration,Ensure source routed packets are not accepted (default),sysctl,net.ipv4.conf.default.accept_source_route,,,,,,,0,=,High
+3.2.6,Network Configuration,Ensure ICMP redirects are not accepted,sysctl,net.ipv4.conf.all.accept_redirects,,,,,,,0,=,High
+3.2.7,Network Configuration,Ensure ICMP redirects are not accepted (default),sysctl,net.ipv4.conf.default.accept_redirects,,,,,,,0,=,High
+3.2.8,Network Configuration,Ensure secure ICMP redirects are not accepted,sysctl,net.ipv4.conf.all.secure_redirects,,,,,,,0,=,High
+3.2.9,Network Configuration,Ensure secure ICMP redirects are not accepted (default),sysctl,net.ipv4.conf.default.secure_redirects,,,,,,,0,=,High
+3.2.10,Network Configuration,Ensure suspicious packets are logged,sysctl,net.ipv4.conf.all.log_martians,,,,,,,1,=,Medium
+3.2.11,Network Configuration,Ensure suspicious packets are logged (default),sysctl,net.ipv4.conf.default.log_martians,,,,,,,1,=,Medium
+3.2.12,Network Configuration,Ensure broadcast ICMP requests are ignored,sysctl,net.ipv4.icmp_echo_ignore_broadcasts,,,,,,,1,=,Medium
+3.2.13,Network Configuration,Ensure bogus ICMP responses are ignored,sysctl,net.ipv4.icmp_ignore_bogus_error_responses,,,,,,,1,=,Medium
+3.2.14,Network Configuration,Ensure Reverse Path Filtering is enabled,sysctl,net.ipv4.conf.all.rp_filter,,,,,,,1,=,High
+3.2.15,Network Configuration,Ensure Reverse Path Filtering is enabled (default),sysctl,net.ipv4.conf.default.rp_filter,,,,,,,1,=,High
+3.2.16,Network Configuration,Ensure TCP SYN Cookies is enabled,sysctl,net.ipv4.tcp_syncookies,,,,,,,1,=,High
+3.3.1,Network Configuration,Ensure IPv6 router advertisements are not accepted,sysctl,net.ipv6.conf.all.accept_ra,,,,,,,0,=,Medium
+3.3.2,Network Configuration,Ensure IPv6 router advertisements are not accepted (default),sysctl,net.ipv6.conf.default.accept_ra,,,,,,,0,=,Medium
+3.3.3,Network Configuration,Ensure IPv6 redirects are not accepted,sysctl,net.ipv6.conf.all.accept_redirects,,,,,,,0,=,Medium
+3.3.4,Network Configuration,Ensure IPv6 redirects are not accepted (default),sysctl,net.ipv6.conf.default.accept_redirects,,,,,,,0,=,Medium
+3.4.1,Network Configuration,Ensure firewalld is installed,package,firewalld,,,,,,,installed,=,High
+3.4.2,Network Configuration,Ensure firewalld service is enabled and running,service,firewalld,,,,,,,enabled,=,High
+3.4.3,Network Configuration,Ensure nftables is not enabled,service,nftables,,,,,,,disabled,=,Medium
+3.4.4,Network Configuration,Ensure iptables is not enabled,service,iptables,,,,,,,disabled,=,Medium
+4.1.1,Logging and Auditing,Ensure auditd is installed,package,audit,,,,,,,installed,=,High
+4.1.2,Logging and Auditing,Ensure auditd service is enabled,service,auditd,,,,,,,enabled,=,High
+4.1.3,Logging and Auditing,Ensure auditing for processes that start prior to auditd is enabled,grub,audit,,,,,,,1,=,High
+4.1.4,Logging and Auditing,Ensure audit_backlog_limit is sufficient,grub,audit_backlog_limit,,,,,,,8192,=,Medium
+4.1.5,Logging and Auditing,Ensure events that modify date and time information are collected,auditd,time-change,,,,,,,present,=,Medium
+4.1.6,Logging and Auditing,Ensure events that modify user/group information are collected,auditd,identity,,,,,,,present,=,Medium
+4.1.7,Logging and Auditing,Ensure events that modify the system's network environment are collected,auditd,system-locale,,,,,,,present,=,Medium
+4.1.8,Logging and Auditing,Ensure events that modify the system's Mandatory Access Controls are collected,auditd,MAC-policy,,,,,,,present,=,Medium
+4.1.9,Logging and Auditing,Ensure login and logout events are collected,auditd,logins,,,,,,,present,=,Medium
+4.1.10,Logging and Auditing,Ensure session initiation information is collected,auditd,session,,,,,,,present,=,Medium
+4.1.11,Logging and Auditing,Ensure discretionary access control permission modification events are collected,auditd,perm_mod,,,,,,,present,=,Medium
+4.1.12,Logging and Auditing,Ensure unsuccessful unauthorized file access attempts are collected,auditd,access,,,,,,,present,=,Medium
+4.1.13,Logging and Auditing,Ensure successful file system mounts are collected,auditd,mounts,,,,,,,present,=,Medium
+4.1.14,Logging and Auditing,Ensure file deletion events by users are collected,auditd,delete,,,,,,,present,=,Medium
+4.1.15,Logging and Auditing,Ensure kernel module loading and unloading is collected,auditd,modules,,,,,,,present,=,Medium
+4.2.1,Logging and Auditing,Ensure rsyslog is installed,package,rsyslog,,,,,,,installed,=,High
+4.2.2,Logging and Auditing,Ensure rsyslog Service is enabled,service,rsyslog,,,,,,,enabled,=,High
+4.2.3,Logging and Auditing,Ensure journald is configured to compress large log files,config_file,,/etc/systemd/journald.conf,Compress,,,,,yes,=,Low
+4.2.4,Logging and Auditing,Ensure journald is configured to write logfiles to persistent disk,config_file,,/etc/systemd/journald.conf,Storage,,,,,persistent,=,Medium
+5.1.1,Access Authentication Authorization,Ensure cron daemon is enabled,service,crond,,,,,,,enabled,=,Medium
+5.1.2,Access Authentication Authorization,Ensure permissions on /etc/crontab are configured,permission,,/etc/crontab,,,,,,600,=,High
+5.1.3,Access Authentication Authorization,Ensure permissions on /etc/cron.hourly are configured,permission,,/etc/cron.hourly,,,,,,700,=,High
+5.1.4,Access Authentication Authorization,Ensure permissions on /etc/cron.daily are configured,permission,,/etc/cron.daily,,,,,,700,=,High
+5.1.5,Access Authentication Authorization,Ensure permissions on /etc/cron.weekly are configured,permission,,/etc/cron.weekly,,,,,,700,=,High
+5.1.6,Access Authentication Authorization,Ensure permissions on /etc/cron.monthly are configured,permission,,/etc/cron.monthly,,,,,,700,=,High
+5.1.7,Access Authentication Authorization,Ensure permissions on /etc/cron.d are configured,permission,,/etc/cron.d,,,,,,700,=,High
+5.2.1,Access Authentication Authorization,Ensure permissions on /etc/ssh/sshd_config are configured,permission,,/etc/ssh/sshd_config,,,,,,600,=,High
+5.2.2,Access Authentication Authorization,Ensure SSH Protocol is set to 2,config_file,,/etc/ssh/sshd_config,Protocol,,,,,2,=,High
+5.2.3,Access Authentication Authorization,Ensure SSH LogLevel is appropriate,config_file,,/etc/ssh/sshd_config,LogLevel,,,,,INFO,=,Medium
+5.2.4,Access Authentication Authorization,Ensure SSH X11 forwarding is disabled,config_file,,/etc/ssh/sshd_config,X11Forwarding,,,,,no,=,Medium
+5.2.5,Access Authentication Authorization,Ensure SSH MaxAuthTries is set to 4 or less,config_file,,/etc/ssh/sshd_config,MaxAuthTries,,,,,4,<=,Medium
+5.2.6,Access Authentication Authorization,Ensure SSH IgnoreRhosts is enabled,config_file,,/etc/ssh/sshd_config,IgnoreRhosts,,,,,yes,=,High
+5.2.7,Access Authentication Authorization,Ensure SSH HostbasedAuthentication is disabled,config_file,,/etc/ssh/sshd_config,HostbasedAuthentication,,,,,no,=,High
+5.2.8,Access Authentication Authorization,Ensure SSH root login is disabled,config_file,,/etc/ssh/sshd_config,PermitRootLogin,,,,,no,=,High
+5.2.9,Access Authentication Authorization,Ensure SSH PermitEmptyPasswords is disabled,config_file,,/etc/ssh/sshd_config,PermitEmptyPasswords,,,,,no,=,High
+5.2.10,Access Authentication Authorization,Ensure SSH PermitUserEnvironment is disabled,config_file,,/etc/ssh/sshd_config,PermitUserEnvironment,,,,,no,=,High
+5.2.11,Access Authentication Authorization,Ensure SSH Idle Timeout Interval is configured,config_file,,/etc/ssh/sshd_config,ClientAliveInterval,,,,,300,<=,Medium
+5.2.12,Access Authentication Authorization,Ensure SSH LoginGraceTime is set to one minute or less,config_file,,/etc/ssh/sshd_config,LoginGraceTime,,,,,60,<=,Medium
+5.2.13,Access Authentication Authorization,Ensure SSH access is limited,config_file,,/etc/ssh/sshd_config,AllowUsers,,,,,configured,contains,Medium
+5.2.14,Access Authentication Authorization,Ensure SSH warning banner is configured,config_file,,/etc/ssh/sshd_config,Banner,,,,,/etc/issue.net,=,Low
+5.3.1,Access Authentication Authorization,Ensure password creation requirements are configured,config_file,,/etc/security/pwquality.conf,minlen,,,,,14,>=,Medium
+5.3.2,Access Authentication Authorization,Ensure lockout for failed password attempts is configured,pam,pam_faillock.so,common-auth,,,,,,configured,=,Medium
+5.3.3,Access Authentication Authorization,Ensure password reuse is limited,pam,pam_pwhistory.so,common-password,,,,,,configured,=,Medium
+5.3.4,Access Authentication Authorization,Ensure password hashing algorithm is SHA-512,pam,pam_unix.so,common-password,,,,,,configured,=,High
+5.4.1,Access Authentication Authorization,Ensure password expiration is 365 days or less,config_file,,/etc/login.defs,PASS_MAX_DAYS,,,,,365,<=,Medium
+5.4.2,Access Authentication Authorization,Ensure minimum days between password changes is configured,config_file,,/etc/login.defs,PASS_MIN_DAYS,,,,,1,>=,Medium
+5.4.3,Access Authentication Authorization,Ensure password expiration warning days is 7 or more,config_file,,/etc/login.defs,PASS_WARN_AGE,,,,,7,>=,Low
+5.4.4,Access Authentication Authorization,Ensure inactive password lock is 30 days or less,command,useradd -D | grep INACTIVE | cut -d= -f2,,,,,,,30,<=,Medium
+5.5.1,Access Authentication Authorization,Ensure accounts in /etc/passwd use shadowed passwords,command,awk -F: '($2 != "x" ) { print $1 }' /etc/passwd,,,,,,,0,=,High
+5.5.2,Access Authentication Authorization,Ensure /etc/shadow password fields are not empty,command,awk -F: '($2 == "" ) { print $1 }' /etc/shadow,,,,,,,0,=,High
+5.5.3,Access Authentication Authorization,Ensure all groups in /etc/passwd exist in /etc/group,command,pwck -r,,,,,,,0,=,Medium
+5.6,Access Authentication Authorization,Ensure root login is restricted to system console,file_exists,,/etc/securetty,,,,,,exists,=,Medium
+6.1.1,System Maintenance,Ensure permissions on /etc/passwd are configured,permission,,/etc/passwd,,,,,,644,=,High
+6.1.2,System Maintenance,Ensure permissions on /etc/shadow are configured,permission,,/etc/shadow,,,,,,000,=,High
+6.1.3,System Maintenance,Ensure permissions on /etc/group are configured,permission,,/etc/group,,,,,,644,=,High
+6.1.4,System Maintenance,Ensure permissions on /etc/gshadow are configured,permission,,/etc/gshadow,,,,,,000,=,High
+6.1.5,System Maintenance,Ensure permissions on /etc/passwd- are configured,permission,,/etc/passwd-,,,,,,644,=,Medium
+6.1.6,System Maintenance,Ensure permissions on /etc/shadow- are configured,permission,,/etc/shadow-,,,,,,000,=,Medium
+6.1.7,System Maintenance,Ensure permissions on /etc/group- are configured,permission,,/etc/group-,,,,,,644,=,Medium
+6.1.8,System Maintenance,Ensure permissions on /etc/gshadow- are configured,permission,,/etc/gshadow-,,,,,,000,=,Medium
+6.2.1,System Maintenance,Ensure password fields are not empty,command,awk -F: '($2 == "" ) { print $1 " " $3 }' /etc/shadow | wc -l,,,,,,,0,=,High
+6.2.2,System Maintenance,Ensure no legacy "+" entries exist in /etc/passwd,command,grep '^+:' /etc/passwd | wc -l,,,,,,,0,=,High
+6.2.3,System Maintenance,Ensure no legacy "+" entries exist in /etc/shadow,command,grep '^+:' /etc/shadow | wc -l,,,,,,,0,=,High
+6.2.4,System Maintenance,Ensure no legacy "+" entries exist in /etc/group,command,grep '^+:' /etc/group | wc -l,,,,,,,0,=,High
+6.2.5,System Maintenance,Ensure root is the only UID 0 account,command,awk -F: '($3 == 0) { print $1 }' /etc/passwd | grep -v root | wc -l,,,,,,,0,=,High
+6.2.6,System Maintenance,Ensure root PATH Integrity,command,echo $PATH | grep -q '::' && echo 1 || echo 0,,,,,,,0,=,Medium
