@@ -3,7 +3,7 @@ Function Invoke-HardeningKitty {
     <#
     .SYNOPSIS
 
-        Invoke-HardeningKitty - Checks and hardens your Rocky Linux configuration
+        Invoke-HardeningKitty - Checks and hardens your Linux configuration (RHEL & Debian)
 
 
          =^._.^=
@@ -19,16 +19,18 @@ Function Invoke-HardeningKitty {
 
     .DESCRIPTION
 
-        HardeningKitty supports hardening of a Rocky Linux (RHEL-based) system. The configuration
-        of the system is retrieved and assessed using a finding list. In addition, the system can
-        be hardened according to predefined values. HardeningKitty reads settings from sysctl,
-        configuration files, systemd, and other Linux system components.
+        HardeningKitty supports hardening of both RHEL-based (Rocky, AlmaLinux, RHEL) and
+        Debian-based (Ubuntu, Debian, Mint) Linux systems. The configuration of the system is
+        retrieved and assessed using a finding list. In addition, the system can be hardened
+        according to predefined values. HardeningKitty automatically detects the OS type and
+        uses the appropriate tools (dnf/apt, firewalld/UFW, SELinux/AppArmor).
 
 
     .PARAMETER FileFindingList
 
         Path to a finding list in CSV format. HardeningKitty has CIS Benchmark lists for
-        Rocky Linux 8 and 9 (Level 1 and Level 2).
+        both RHEL-based (Rocky Linux 8/9) and Debian-based (Ubuntu 22.04/20.04, Debian 11/12)
+        systems (Level 1 and Level 2).
 
 
     .PARAMETER Mode
@@ -163,6 +165,57 @@ Function Invoke-HardeningKitty {
         [scriptblock]
         $Filter
     )
+
+    # Global variable to store OS type
+    $Script:OSType = $null
+
+    Function Get-OSType {
+        <#
+        .SYNOPSIS
+            Detect the operating system type (RHEL-based or Debian-based)
+        #>
+
+        [CmdletBinding()]
+        Param ()
+
+        If ($Script:OSType) {
+            return $Script:OSType
+        }
+
+        try {
+            If (Test-Path "/etc/os-release") {
+                $OsRelease = Get-Content "/etc/os-release" -Raw
+
+                # Check for Debian-based distributions
+                If ($OsRelease -match "ID(_LIKE)?=.*?(ubuntu|debian|mint|pop)") {
+                    $Script:OSType = "Debian"
+                    return "Debian"
+                }
+                # Check for RHEL-based distributions
+                ElseIf ($OsRelease -match "ID(_LIKE)?=.*?(rhel|rocky|centos|almalinux|fedora)") {
+                    $Script:OSType = "RHEL"
+                    return "RHEL"
+                }
+            }
+
+            # Fallback detection
+            If (Test-Path "/usr/bin/apt-get") {
+                $Script:OSType = "Debian"
+                return "Debian"
+            }
+            ElseIf (Test-Path "/usr/bin/dnf" -or Test-Path "/usr/bin/yum") {
+                $Script:OSType = "RHEL"
+                return "RHEL"
+            }
+
+            # Default to RHEL for backward compatibility
+            $Script:OSType = "RHEL"
+            return "RHEL"
+        } catch {
+            $Script:OSType = "RHEL"
+            return "RHEL"
+        }
+    }
 
     Function Write-ProtocolEntry {
         <#
@@ -489,7 +542,7 @@ Function Invoke-HardeningKitty {
     Function Get-PackageStatus {
         <#
         .SYNOPSIS
-            Check if package is installed
+            Check if package is installed (supports both RHEL and Debian)
         #>
 
         [CmdletBinding()]
@@ -499,11 +552,24 @@ Function Invoke-HardeningKitty {
         )
 
         try {
-            $Result = Invoke-Expression "rpm -q $PackageName 2>&1"
-            If ($Result -match "^package.*is not installed" -or $Result -match "^$PackageName is not installed") {
+            $OS = Get-OSType
+
+            If ($OS -eq "Debian") {
+                # Debian/Ubuntu - use dpkg
+                $Result = Invoke-Expression "dpkg -l $PackageName 2>/dev/null | grep '^ii'"
+                If ($Result -and $Result.Trim()) {
+                    return "installed"
+                }
                 return "not-installed"
             }
-            return "installed"
+            Else {
+                # RHEL/Rocky - use rpm
+                $Result = Invoke-Expression "rpm -q $PackageName 2>&1"
+                If ($Result -match "^package.*is not installed" -or $Result -match "^$PackageName is not installed") {
+                    return "not-installed"
+                }
+                return "installed"
+            }
         } catch {
             return "not-installed"
         }
@@ -512,7 +578,7 @@ Function Invoke-HardeningKitty {
     Function Install-Package {
         <#
         .SYNOPSIS
-            Install package using dnf/yum
+            Install package (supports both RHEL and Debian)
         #>
 
         [CmdletBinding()]
@@ -522,8 +588,19 @@ Function Invoke-HardeningKitty {
         )
 
         try {
-            $null = Invoke-Expression "dnf install -y $PackageName 2>&1"
-            return $true
+            $OS = Get-OSType
+
+            If ($OS -eq "Debian") {
+                # Debian/Ubuntu - use apt-get
+                $null = Invoke-Expression "apt-get update -qq 2>&1"
+                $null = Invoke-Expression "DEBIAN_FRONTEND=noninteractive apt-get install -y $PackageName 2>&1"
+                return $true
+            }
+            Else {
+                # RHEL/Rocky - use dnf
+                $null = Invoke-Expression "dnf install -y $PackageName 2>&1"
+                return $true
+            }
         } catch {
             return $false
         }
@@ -532,7 +609,7 @@ Function Invoke-HardeningKitty {
     Function Remove-Package {
         <#
         .SYNOPSIS
-            Remove package using dnf/yum
+            Remove package (supports both RHEL and Debian)
         #>
 
         [CmdletBinding()]
@@ -542,8 +619,18 @@ Function Invoke-HardeningKitty {
         )
 
         try {
-            $null = Invoke-Expression "dnf remove -y $PackageName 2>&1"
-            return $true
+            $OS = Get-OSType
+
+            If ($OS -eq "Debian") {
+                # Debian/Ubuntu - use apt-get
+                $null = Invoke-Expression "DEBIAN_FRONTEND=noninteractive apt-get remove -y $PackageName 2>&1"
+                return $true
+            }
+            Else {
+                # RHEL/Rocky - use dnf
+                $null = Invoke-Expression "dnf remove -y $PackageName 2>&1"
+                return $true
+            }
         } catch {
             return $false
         }
@@ -673,6 +760,196 @@ Function Invoke-HardeningKitty {
             return $true
         } catch {
             return $false
+        }
+    }
+
+    Function Get-AppArmorStatus {
+        <#
+        .SYNOPSIS
+            Get AppArmor status (Debian/Ubuntu MAC system)
+        #>
+
+        [CmdletBinding()]
+        Param ()
+
+        try {
+            # Check if AppArmor is enabled
+            $EnabledCheck = Invoke-Expression "aa-status --enabled 2>&1"
+
+            If ($LASTEXITCODE -ne 0) {
+                return "disabled"
+            }
+
+            # Check if AppArmor service is active
+            $Result = Invoke-Expression "systemctl is-active apparmor 2>/dev/null"
+
+            If ($Result -and $Result.Trim() -eq "active") {
+                return "enforcing"
+            }
+
+            return "disabled"
+        } catch {
+            return "disabled"
+        }
+    }
+
+    Function Set-AppArmorMode {
+        <#
+        .SYNOPSIS
+            Set AppArmor mode (Debian/Ubuntu MAC system)
+        #>
+
+        [CmdletBinding()]
+        Param (
+            [String]
+            $Mode
+        )
+
+        try {
+            If ($Mode -eq "enforcing" -or $Mode -eq "enabled") {
+                # Enable and start AppArmor
+                $null = Invoke-Expression "systemctl enable apparmor 2>&1"
+                $null = Invoke-Expression "systemctl start apparmor 2>&1"
+                return $true
+            }
+            ElseIf ($Mode -eq "disabled") {
+                # Stop and disable AppArmor
+                $null = Invoke-Expression "systemctl stop apparmor 2>&1"
+                $null = Invoke-Expression "systemctl disable apparmor 2>&1"
+                return $true
+            }
+
+            return $false
+        } catch {
+            return $false
+        }
+    }
+
+    Function Get-UFWStatus {
+        <#
+        .SYNOPSIS
+            Get UFW (Uncomplicated Firewall) status (Debian/Ubuntu)
+        #>
+
+        [CmdletBinding()]
+        Param ()
+
+        try {
+            $Result = Invoke-Expression "ufw status 2>/dev/null | head -1"
+
+            If ($Result -match "Status: active") {
+                return "active"
+            }
+            ElseIf ($Result -match "Status: inactive") {
+                return "inactive"
+            }
+
+            return "inactive"
+        } catch {
+            return "inactive"
+        }
+    }
+
+    Function Enable-UFW {
+        <#
+        .SYNOPSIS
+            Enable UFW firewall (Debian/Ubuntu)
+        #>
+
+        [CmdletBinding()]
+        Param ()
+
+        try {
+            $null = Invoke-Expression "ufw --force enable 2>&1"
+            return $true
+        } catch {
+            return $false
+        }
+    }
+
+    Function Get-UFWRule {
+        <#
+        .SYNOPSIS
+            Check if UFW rule exists (Debian/Ubuntu)
+        #>
+
+        [CmdletBinding()]
+        Param (
+            [String]
+            $ServiceOrPort
+        )
+
+        try {
+            $Result = Invoke-Expression "ufw status 2>/dev/null"
+
+            If ($Result -match $ServiceOrPort) {
+                return "present"
+            }
+
+            return "absent"
+        } catch {
+            return "absent"
+        }
+    }
+
+    Function Add-UFWRule {
+        <#
+        .SYNOPSIS
+            Add UFW firewall rule (Debian/Ubuntu)
+        #>
+
+        [CmdletBinding()]
+        Param (
+            [String]
+            $Rule
+        )
+
+        try {
+            $null = Invoke-Expression "ufw $Rule 2>&1"
+            return $true
+        } catch {
+            return $false
+        }
+    }
+
+    Function Get-MACStatus {
+        <#
+        .SYNOPSIS
+            Get Mandatory Access Control status (works for both SELinux and AppArmor)
+        #>
+
+        [CmdletBinding()]
+        Param ()
+
+        $OS = Get-OSType
+
+        If ($OS -eq "Debian") {
+            return Get-AppArmorStatus
+        }
+        Else {
+            return Get-SELinuxStatus
+        }
+    }
+
+    Function Set-MACMode {
+        <#
+        .SYNOPSIS
+            Set Mandatory Access Control mode (works for both SELinux and AppArmor)
+        #>
+
+        [CmdletBinding()]
+        Param (
+            [String]
+            $Mode
+        )
+
+        $OS = Get-OSType
+
+        If ($OS -eq "Debian") {
+            return Set-AppArmorMode -Mode $Mode
+        }
+        Else {
+            return Set-SELinuxMode -Mode $Mode
         }
     }
 
@@ -958,6 +1235,18 @@ install $Module /bin/true
                 "selinux" {
                     return Get-SELinuxStatus
                 }
+                "apparmor" {
+                    return Get-AppArmorStatus
+                }
+                "mac" {
+                    return Get-MACStatus
+                }
+                "ufw" {
+                    return Get-UFWRule -ServiceOrPort $MethodArgument
+                }
+                "ufw_status" {
+                    return Get-UFWStatus
+                }
                 "auditd" {
                     return Get-AuditRule -RulePattern $MethodArgument
                 }
@@ -1029,6 +1318,24 @@ install $Module /bin/true
                 }
                 "selinux" {
                     return Set-SELinuxMode -Mode $RecommendedValue
+                }
+                "apparmor" {
+                    return Set-AppArmorMode -Mode $RecommendedValue
+                }
+                "mac" {
+                    return Set-MACMode -Mode $RecommendedValue
+                }
+                "ufw" {
+                    If ($RecommendedValue -match "present|allowed|enabled") {
+                        return Add-UFWRule -Rule $MethodArgument
+                    }
+                    return $true
+                }
+                "ufw_status" {
+                    If ($RecommendedValue -match "active|enabled") {
+                        return Enable-UFW
+                    }
+                    return $true
                 }
                 "auditd" {
                     If ($RecommendedValue -match "present|enabled") {
